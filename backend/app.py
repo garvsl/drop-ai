@@ -10,4 +10,4 @@ user_data = {'name': 'John Doe', "Address": "123 Boulvard Ave", "Birthday": "Jan
 classif = classification(email_data.email_data)
 
 executed = execute_action(classif.get('classification'), user_data, json.dumps(email_data.email_data), classif.get('ocr'))
-print(executed)
+

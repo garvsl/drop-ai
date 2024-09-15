@@ -1,55 +1,96 @@
 import os
+import json
 from openai import OpenAI
+from PyPDFForm import PdfWrapper
+import requests
+
 
 client = OpenAI(
-    # This is the default and can be omitted
-    api_key=os.environ.get("OPENAI_API_KEY"),
+    api_key="OPENAI_API_KEY",
 )
-import json
 
 
-def process_email(email_data):
-    prompt = f"""
-Analyze the following email and extract the requested information. 
-Provide the output in JSON format with the following fields:
-- sender_name: The full name of the sender
-- sender_email: The email address of the sender
-- recipients: A list of recipient email addresses
-- subject: The subject line of the email
-- date: The date the email was sent (in YYYY-MM-DD format)
-- content_summary: A brief summary containing key information of the email content (max 50 words)
-- attachments: A list of attachment filenames, and links.
+def process_email(email_data, user_data):
+    
+  email_data = json.loads(email_data)
+  payload = email_data.get('payload')
+  if payload and 'parts' in payload:
+    for part in payload['parts']:
+      if 'attachmentLink' in part:
+          pdf_link = part['attachmentLink']
+          break
+      
+  response = requests.get(pdf_link)
+  with open("mypdf.pdf", 'wb') as f:
+    f.write(response.content)
 
-If any field is not found in the email, use null as the value.
+  pdf_form_schema = PdfWrapper("mypdf.pdf").schema
+  form_data = json.dumps(pdf_form_schema, indent=4, sort_keys=True)
+  # print(form_data)
 
-Email data:
-{email_data}
+  msg = f"""
+ Your task is to extract the relevant information from the user data and map it to the required form fields. Below is the user data followed by the form fields we need to fill out.
 
-Example output:
-{{
-  "sender_name": "John Doe",
-  "sender_email": "johndoe@example.com",
-  "recipients": ["recipient1@example.com", "recipient2@example.com"],
-  "subject": "Meeting agenda",
-  "date": "2024-09-14",
-  "content_summary": "Reminder about tomorrow's team meeting and attached agenda.",
-  "attachments": ["agenda.pdf: https://drive.google.com/uc?export=download&id=1sydBd9U0gPnVQoNJgmgII3B3VgY9fg6M", "presentation.pptx"]
-}}
+  **Email Data**:
+  {email_data}
+ 
+  **User Data**:
+  {user_data}
 
-Please provide the extracted information in the same JSON format:
-"""
+  **Form Fields**:
+  {form_data}
 
-    response = client.chat.completions.create(model="gpt-4",
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant that extracts information from emails."},
-        {"role": "user", "content": prompt}
-    ],
-    temperature=0.2)
+  Please create a Python dictionary that corresponds to the form field names and fill in the values based on the email data. Ensure that each field in the form is filled out using the relevant data from the email, and if any data is missing, leave it as an empty string.
+  The output of response should output in the exact same form as form_data, just filling in the properties. The output should be a Python dictionary.
+  ```python
+  form_filled_data = {{
+      "Buy mail address": "",
+      "Buyer City": "",
+      "Buyer State": "",
+      "Buyer print name 1": "",
+      "Buyer print name 2": "",
+      "Buyer zip": "62704",
+      "DL, ID, Dealer No 2": "",
+      "Day": "",
+      "Daytime phone": "",
+      "Gift Value": "",
+      "Identification no": "",
+      "Lic Plate No": "",
+      "M/C Eng No": "",
+      "Make": "",
+      "Month": "",
+      "Print seller's name": "",
+      "Relationship": "",
+      "Sell date 1": "",
+      "Sell date 2": "",
+      "Sell zip": "",
+      "Seller City": "",
+      "Seller State": "",
+      "Seller mail address": "",
+      "Seller print name 1": "",
+      "Seller print name 2": "",
+      "Selling Price": "",
+      "Year-1": "",
+      "Year-2": "",
+      "Year-3": "",
+      "Year-4": "",
+      "Yr Model": ""
+  }}
+  
+  """
+  response = client.chat.completions.create(model="gpt-4",
+      messages=[
+          {"role": "system", "content": "You are a helpful assistant that extracts information from emails."},
+          {"role": "user", "content": msg}
+      ],
+      temperature=0.2)
 
-    result = json.loads(response.choices[0].message.content)
-    return result
+  result = response.choices[0].message.content
 
-
+  print(result)
+  return result
+''
+user_data = {'name': 'John Doe', "Address": "123 Boulvard Ave", "Birthday": "Januaray 1st, 2000", "Driver's License ID": "0374795039"}
 email_data = json.dumps({
   "id": "REDACTED",
   "sender": {
@@ -154,12 +195,14 @@ email_data = json.dumps({
       }
     ]
   }
-})
-# extracted_info = process_email(email_data)
-# print(json.dumps(extracted_info, indent=2))
+}
+)
 
-from PyPDFForm import PdfWrapper
+extracted_info = process_email(email_data, user_data)
+print(extracted_info)
 
-pdf_form_schema = PdfWrapper("easy-pdf.pdf").schema
 
-print(json.dumps(pdf_form_schema, indent=4, sort_keys=True))
+
+
+
+

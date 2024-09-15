@@ -6,7 +6,7 @@ import requests
 
 
 client = OpenAI(
-    api_key="OPENAI_API_KEY",
+    api_key=os.environ.get("OPENAI_API_KEY"),
 )
 
 

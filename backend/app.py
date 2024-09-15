@@ -14,13 +14,21 @@ def process_email(email_data, user_data):
     
   email_data = json.loads(email_data)
   payload = email_data.get('payload')
+  pdf_link = None
   if payload and 'parts' in payload:
     for part in payload['parts']:
       if 'attachmentLink' in part:
           pdf_link = part['attachmentLink']
           break
       
+    if not pdf_link:
+        return "No PDF attachment found in the email."
+
+      
   response = requests.get(pdf_link)
+  if response.status_code != 200:
+        return f"Failed to download PDF: {response.status_code}"
+
   with open("mypdf.pdf", 'wb') as f:
     f.write(response.content)
 
@@ -29,11 +37,12 @@ def process_email(email_data, user_data):
   # print(form_data)
 
   msg = f"""
-  Your task is to extract the relevant information from the user data and map it to the required form fields. Below is the user data followed by the form fields we need to fill out. There is also the email data which is the one who sent the form to be filled out to the user.
+  Your task is to extract the relevant information from the user data and map it to the required form fields.
+  Below is the user data followed by the form fields we need to fill out. There is also the email data which is the one who sent the form to be filled out to the user.
 
   **Sender Email Data**:
   {email_data}
- 
+
   **Received User Data**:
   {user_data}
 
@@ -41,8 +50,8 @@ def process_email(email_data, user_data):
   {form_data}
 
   Please create a JSON object that corresponds to the form field names and fill in the values based on the email data. Ensure that each field in the form is filled out using the relevant data from the email, and if any data is missing, leave it as an empty string.
-  The output of response should output in the exact same form as form_data, just filling in the properties. The output should be a JSON object.
   """
+
   response = client.chat.completions.create(model="gpt-4",
       messages=[
           {"role": "system", "content": "You are a helpful assistant that extracts information from emails."},

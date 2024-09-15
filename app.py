@@ -29,54 +29,19 @@ def process_email(email_data, user_data):
   # print(form_data)
 
   msg = f"""
- Your task is to extract the relevant information from the user data and map it to the required form fields. Below is the user data followed by the form fields we need to fill out.
+  Your task is to extract the relevant information from the user data and map it to the required form fields. Below is the user data followed by the form fields we need to fill out. There is also the email data which is the one who sent the form to be filled out to the user.
 
-  **Email Data**:
+  **Sender Email Data**:
   {email_data}
  
-  **User Data**:
+  **Received User Data**:
   {user_data}
 
   **Form Fields**:
   {form_data}
 
-  Please create a Python dictionary that corresponds to the form field names and fill in the values based on the email data. Ensure that each field in the form is filled out using the relevant data from the email, and if any data is missing, leave it as an empty string.
-  The output of response should output in the exact same form as form_data, just filling in the properties. The output should be a Python dictionary.
-  ```python
-  form_filled_data = {{
-      "Buy mail address": "",
-      "Buyer City": "",
-      "Buyer State": "",
-      "Buyer print name 1": "",
-      "Buyer print name 2": "",
-      "Buyer zip": "62704",
-      "DL, ID, Dealer No 2": "",
-      "Day": "",
-      "Daytime phone": "",
-      "Gift Value": "",
-      "Identification no": "",
-      "Lic Plate No": "",
-      "M/C Eng No": "",
-      "Make": "",
-      "Month": "",
-      "Print seller's name": "",
-      "Relationship": "",
-      "Sell date 1": "",
-      "Sell date 2": "",
-      "Sell zip": "",
-      "Seller City": "",
-      "Seller State": "",
-      "Seller mail address": "",
-      "Seller print name 1": "",
-      "Seller print name 2": "",
-      "Selling Price": "",
-      "Year-1": "",
-      "Year-2": "",
-      "Year-3": "",
-      "Year-4": "",
-      "Yr Model": ""
-  }}
-  
+  Please create a JSON object that corresponds to the form field names and fill in the values based on the email data. Ensure that each field in the form is filled out using the relevant data from the email, and if any data is missing, leave it as an empty string.
+  The output of response should output in the exact same form as form_data, just filling in the properties. The output should be a JSON object.
   """
   response = client.chat.completions.create(model="gpt-4",
       messages=[
@@ -87,7 +52,6 @@ def process_email(email_data, user_data):
 
   result = response.choices[0].message.content
 
-  print(result)
   return result
 ''
 user_data = {'name': 'John Doe', "Address": "123 Boulvard Ave", "Birthday": "Januaray 1st, 2000", "Driver's License ID": "0374795039"}

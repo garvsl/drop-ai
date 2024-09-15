@@ -62,19 +62,24 @@ def classify_email(email_content, ocr_text=None):
     
     msg = f"""
     You are an assistant that classifies email actions. Based on the email content below, classify whether the user needs to:
-    - Sign a document (e.g., a bill of sale or agreement)
-    - Check in for a flight
-    - Fill a hackathon release form
+
+    - Reply to the email
+    - Schedule a meeting
+    - Follow up on a previous email or conversation
+    - Sign or generate a contract with specific deliverables
+    - Complete or sign any attached documents (e.g., agreements, contracts)
+    - Organize or manage any scheduling (e.g., meeting scheduler)
     - Or any other action
     - Or none of the above.
 
-    Focus on keywords such as "Bill of Sale", "Release Form", "Check-in", etc. If the document is a Bill of Sale, it should include details about selling or transferring ownership of something.
+    Focus on keywords such as "Reply", "Meeting", "Follow up", "Contract", "Sign", "Schedule", etc. If the email includes a contract or agreement, classify it as a document that needs signing or generating. If the email involves scheduling, classify it as a meeting to schedule. If it's a follow-up email, identify it as such.
 
     **Email Content**:
     {email_content}
 
     {ocr_text_msg}
     """
+
     
     response = client.chat.completions.create(
         model="gpt-4",
@@ -82,7 +87,7 @@ def classify_email(email_content, ocr_text=None):
             {"role": "system", "content": "You are a helpful assistant that classifies emails and documents."},
             {"role": "user", "content": msg}
         ],
-        temperature=0.2
+        temperature=0.1
     )
     
     classification = response.choices[0].message.content
@@ -99,8 +104,6 @@ def classification(email_content):
         ocr_text = clean_ocr_text(ocr_text)  
 
     classification_result = classify_email(email_content, ocr_text=ocr_text)
-    return classification_result
+    return {'classification':classification_result, 'ocr':ocr_text} 
 
 
-classif = classification(email_data.email_data)
-print(classif)

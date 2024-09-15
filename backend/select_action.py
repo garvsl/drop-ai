@@ -1,4 +1,5 @@
 import json
+from generate_reply import generate_reply
 from fill_out_document import process_email
 
 
@@ -8,8 +9,8 @@ def execute_action(classification_result, user_data, email_data, ocr_text=None):
     if "Complete or sign" in classification_result:
             return process_email(email_data, user_data, ocr_text)
     # Handling replies
-    # elif "Reply to the email" in classification_result:
-    #     generate_reply(user_data, email_data)
+    elif "Reply to the email" in classification_result:
+        generate_reply(user_data, email_data)
 
     # # Handling meeting scheduling
     # elif "Schedule a meeting" in classification_result:

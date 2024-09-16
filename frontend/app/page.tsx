@@ -1,4 +1,5 @@
 "use client";
+import { cn } from "@/lib/utils";
 import { useState } from "react";
 
 const datas = [
@@ -647,82 +648,136 @@ export default function Home() {
     setResult(await res.json());
   };
 
+  const senCall = async () => {
+    console.log("running api");
+    const res = await fetch("http://127.0.0.1:5000/sen_call", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email_data: datas[dataSet],
+        user_data: userData,
+      }),
+    });
+    setResult(await res.json());
+  };
+
   console.log(dataSet);
   return (
     <div className="items-center justify-items-center min-h-screen p-8 pb-20 gap-12 flex flex-col sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <div className="gap-4 flex">
-        Simulate Incoming Mail:
-        <button className="bg-red-500 p-4" onClick={() => setDataset(0)}>
+        {/* Simulate Incoming Mail: */}
+        <button
+          className={cn(
+            "bg-neutral-900 rounded-lg p-4",
+            dataSet == 0 && "bg-neutral-700"
+          )}
+          onClick={() => setDataset(0)}
+        >
           File Data
         </button>
-        <button className="bg-red-500 p-4" onClick={() => setDataset(1)}>
+        <button
+          className={cn(
+            "bg-neutral-900 rounded-lg p-4",
+            dataSet == 1 && "bg-neutral-700"
+          )}
+          onClick={() => setDataset(1)}
+        >
           Reply Data
         </button>
-        <button className="bg-red-500 p-4" onClick={() => setDataset(2)}>
+        <button
+          className={cn(
+            "bg-neutral-900 rounded-lg p-4",
+            dataSet == 2 && "bg-neutral-700"
+          )}
+          onClick={() => setDataset(2)}
+        >
           Date Data
         </button>
-        <button className="bg-red-500 p-4" onClick={() => setDataset(3)}>
+        <button
+          className={cn(
+            "bg-neutral-900 rounded-lg p-4",
+            dataSet == 3 && "bg-neutral-700"
+          )}
+          onClick={() => setDataset(3)}
+        >
           Schedule Data
         </button>
-        <button className="bg-red-500 p-4" onClick={() => setDataset(4)}>
+        <button
+          className={cn(
+            "bg-neutral-900 rounded-lg p-4",
+            dataSet == 4 && "bg-neutral-700"
+          )}
+          onClick={() => setDataset(4)}
+        >
           Query Data
         </button>
-        <button className="bg-red-500 p-4" onClick={() => setDataset(4)}>
+        <button
+          className={cn(
+            "bg-neutral-900 rounded-lg p-4",
+            dataSet == 5 && "bg-neutral-700"
+          )}
+          onClick={() => setDataset(5)}
+        >
           Sentinment Data
         </button>
       </div>
-      <div className="flex flex-col">
-        <label>user data</label>
-        <textarea
-          className="text-black w-[500px] h-[200px]"
-          value={userData}
-          onChange={(e) => setUserdata(e.target.value)}
-        ></textarea>
-        <button className="bg-blue-500">save</button>
-      </div>
-      {dataSet == 4 && (
-        <div>
-          <label>Query:</label>
+      <div className="flex flexr-row gap-4 flex-wrap justify-center">
+        <div className="flex flex-col gap-2">
+          <label>User Data:</label>
           <textarea
-            value={quer}
-            className="text-black"
-            onChange={(e) => setQuer(e.target.value)}
+            className="text-black rounded-md p-2 w-[500px] h-[200px] resize-none"
+            value={userData}
+            onChange={(e) => setUserdata(e.target.value)}
           ></textarea>
         </div>
-      )}
-      <div className="flex flex-col">
-        <label>Email Call</label>
-        {dataSet != 4 ? (
-          <textarea
-            value={JSON.stringify(datas[dataSet])}
-            className="text-black  w-[500px] h-[200px]"
-          ></textarea>
-        ) : (
-          <textarea
-            value={JSON.stringify([
-              datas[3],
-              datas[4],
-              datas[5],
-              datas[6],
-              datas[7],
-              datas[8],
-            ])}
-            className="text-black  w-[500px] h-[200px]"
-          ></textarea>
+        {dataSet == 4 && (
+          <div className="flex flex-col gap-2">
+            <label>Query:</label>
+            <textarea
+              value={quer}
+              className="text-black rounded-md p-2 w-[500px] h-[200px] resize-none"
+              onChange={(e) => setQuer(e.target.value)}
+            ></textarea>
+          </div>
         )}
-        <button
-          onClick={() =>
-            dataSet != 2 && dataSet != 4
-              ? apiCall()
-              : dataSet == 2
-              ? driverCall()
-              : quCall()
-          }
-          className="bg-blue-500"
-        >
-          try
-        </button>
+        <div className="flex flex-col gap-2">
+          <label>Email Call</label>
+          {dataSet != 4 ? (
+            <textarea
+              value={JSON.stringify(datas[dataSet])}
+              className="text-black rounded-md p-2 w-[500px] h-[200px] resize-none"
+            ></textarea>
+          ) : (
+            <textarea
+              value={JSON.stringify([
+                datas[3],
+                datas[4],
+                datas[5],
+                datas[6],
+                datas[7],
+                datas[8],
+              ])}
+              className="text-black rounded-md p-2 w-[500px] h-[200px] resize-none"
+            ></textarea>
+          )}
+        </div>
       </div>
+      <button
+        onClick={() =>
+          dataSet != 2 && dataSet != 4 && dataSet != 5
+            ? apiCall()
+            : dataSet == 2
+            ? driverCall()
+            : dataSet == 4
+            ? quCall()
+            : senCall()
+        }
+        className="bg-blue-500 rounded-md p-4"
+      >
+        Call API
+      </button>
       <div>Response: {JSON.stringify(result)}</div>
     </div>
   );
